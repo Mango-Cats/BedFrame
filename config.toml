@@ -1,0 +1,18 @@
+# scripts/runscript.py configuration
+
+[paths]
+# Path to the FDA Philippines drug products CSV file (relative to root)
+ph_fda_drugs_csv = "data/drug_products.csv"
+
+# Path to the DrugBank XML database (relative to root)
+drugbank_data = "data/full_database.xml"
+
+# Output file path for the final enriched CSV (relative to root)
+output_file = "artifact/drugscribed.csv"
+
+# Output file path for the unboiled (boilerplate-removed) CSV (relative to root)
+unboiled_output_file = "artifact/boiled.csv"
+
+[settings]
+# Intermediate file path for scraped data (relative to root, in data/ folder)
+scraped_csv = "artifact/drugscraped.csv"

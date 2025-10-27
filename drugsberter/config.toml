@@ -1,0 +1,16 @@
+# Configuration file for drug embeddings generation
+
+[model]
+# The model to use for generating embeddings
+# Supports both SentenceTransformers and Hugging Face Transformers models
+name = "pritamdeka/BioBERT-mnli-snli-scinli-scitail-mednli-stsb"
+device = "npu"
+
+[data]
+# Path to the CSV file containing drug data (output from drugscriber/unboiled)
+# Expected columns: Generic Name, Drug Name, Description, ATC Codes
+csv_file = "../artifact/boiled.csv"
+
+[output]
+# Output files for the embeddings database
+hdf5_file = "drugsberted.h5"
