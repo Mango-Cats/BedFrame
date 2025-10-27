@@ -1,5 +1,10 @@
 # BedFrame
 
+**By**: Zhean Robby Ganituen <br>
+- GitHub: [`@zrygan`](https://github.com/zrygan)
+- ([DLSU Mail](zhean_robby_ganituen@dlsu.edu.ph))
+- [MangoCats]([url](https://github.com/Mango-Cats))
+
 A sentence em**bed**dings **frame**work for pharmaceutical data from drug databases and DrugBank using sentence transformers.
 
 This framework enables semantic similarity comparison of pharmacologic drug descriptions.
