@@ -1,8 +1,6 @@
 # BedFrame
 
-**By**: Zhean Robby Ganituen / [`zrygan`](https://github.com/zrygan) (2025)
-
-A sentence em**bed**dings **frame**work for pharmaceutical data from drug databases and DrugBank.
+A sentence em**bed**dings **frame**work for pharmaceutical data from drug databases and DrugBank using sentence transformers.
 
 This framework enables semantic similarity comparison of pharmacologic drug descriptions.
 
