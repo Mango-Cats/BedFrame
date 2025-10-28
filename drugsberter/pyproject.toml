@@ -1,7 +1,7 @@
 [project]
 name = "drugsberter"
 version = "0.1.0"
-description = "Add your description here"
+description = "This module generates sentence embeddings for pharmaceutical products by processing drug descriptions and ATC (Anatomical Therapeutic Chemical) codes using a BioBERT-based sentence transformer model. The embeddings are stored in HDF5 format for efficient retrieval and similarity computations."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
