@@ -13,4 +13,4 @@ csv_file = "../artifact/boiled.csv"
 
 [output]
 # Output files for the embeddings database
-hdf5_file = "drugsberted.h5"
+hdf5_file = "../artifact/drugsberted.h5"

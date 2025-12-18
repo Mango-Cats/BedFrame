@@ -122,7 +122,7 @@ def load_and_process_data(
         atc_codes = row[atc_col] if pd.notna(row[atc_col]) else ""
 
         # Default to generic name if brand name is empty, "unbranded", or "none"
-        if drug_name.strip().lower() in ["", "unbranded", "none"]:
+        if drug_name.strip().lower() in ["", "unbranded", "none", "none reformulated"]:
             if not generic_name.strip():
                 raise ValueError(
                     f"Error at row {idx}: Brand name is invalid ('{row[drug_col]}') "
