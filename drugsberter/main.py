@@ -55,7 +55,7 @@ def load_configuration(config_path: Path) -> dict:
     return config
 
 
-def extract_config_parameters(config: dict) -> Tuple[str, str, str, str, str, str]:
+def extract_config_parameters(config: dict) -> Tuple[str, str, str, str, str, str, str]:
     """
     Extract and validate required parameters from configuration dictionary.
 
@@ -63,7 +63,7 @@ def extract_config_parameters(config: dict) -> Tuple[str, str, str, str, str, st
         config: Configuration dictionary loaded from TOML
 
     Returns:
-        Tuple of (model_name, csv_file, drug_name_col, desc_col, atc_col, hdf5_file)
+        Tuple of (model_name, csv_file, generic_name_col, drug_name_col, desc_col, atc_col, hdf5_file)
 
     Raises:
         KeyError: If required configuration keys are missing
@@ -72,6 +72,7 @@ def extract_config_parameters(config: dict) -> Tuple[str, str, str, str, str, st
     device = config["model"]["device"]
     csv_file = config["data"]["csv_file"]
     hdf5_file = config["output"]["hdf5_file"]
+    generic_name_col = "Generic Name"
     drug_name_col = "Drug Name"
     desc_col = "Description"
     atc_col = "ATC Codes"
@@ -80,18 +81,19 @@ def extract_config_parameters(config: dict) -> Tuple[str, str, str, str, str, st
     print(f"CSV File: {csv_file}")
     print(f"Output HDF5: {hdf5_file}")
 
-    return model_name, device, csv_file, drug_name_col, desc_col, atc_col, hdf5_file
+    return model_name, device, csv_file, generic_name_col, drug_name_col, desc_col, atc_col, hdf5_file
 
 
 def load_and_process_data(
-    csv_file: str, drug_col: str, desc_col: str, atc_col: str
+    csv_file: str, generic_col: str, drug_col: str, desc_col: str, atc_col: str
 ) -> Tuple[Dict[str, str], Dict[str, str]]:
     """
     Load CSV file and create mappings from drug names to descriptions and ATC codes.
 
     Args:
         csv_file: Path to CSV file containing drug data
-        drug_col: Name of the column containing drug names
+        generic_col: Name of the column containing generic names
+        drug_col: Name of the column containing drug names (brand names)
         desc_col: Name of the column containing drug descriptions
         atc_col: Name of the column containing ATC classification codes
 
@@ -104,6 +106,7 @@ def load_and_process_data(
         Only non-empty descriptions and ATC codes are included in the mappings.
         This allows handling of incomplete data where some drugs may lack
         descriptions or ATC classifications.
+        If brand name is empty, "unbranded", or "none", the generic name is used instead.
     """
     print(f"\nLoading drug data from {csv_file}...")
     df = pd.read_csv(csv_file)
@@ -112,10 +115,20 @@ def load_and_process_data(
     drug_to_description = {}
     drug_to_atc = {}
 
-    for _, row in df.iterrows():
-        drug_name = row[drug_col]
+    for idx, row in df.iterrows():
+        generic_name = row[generic_col] if pd.notna(row[generic_col]) else ""
+        drug_name = row[drug_col] if pd.notna(row[drug_col]) else ""
         description = row[desc_col] if pd.notna(row[desc_col]) else ""
         atc_codes = row[atc_col] if pd.notna(row[atc_col]) else ""
+
+        # Default to generic name if brand name is empty, "unbranded", or "none"
+        if drug_name.strip().lower() in ["", "unbranded", "none"]:
+            if not generic_name.strip():
+                raise ValueError(
+                    f"Error at row {idx}: Brand name is invalid ('{row[drug_col]}') "
+                    f"and generic name is empty. Cannot process this drug entry."
+                )
+            drug_name = generic_name
 
         # Store non-empty descriptions
         if description.strip():
@@ -442,14 +455,14 @@ def main():
     config = load_configuration(config_path)
 
     # Extract parameters
-    model_name, device, csv_file, drug_name_col, desc_col, atc_col, hdf5_file = (
+    model_name, device, csv_file, generic_name_col, drug_name_col, desc_col, atc_col, hdf5_file = (
         extract_config_parameters(config)
     )
 
     # Load and process data
     try:
         drug_to_description, drug_to_atc = load_and_process_data(
-            csv_file, drug_name_col, desc_col, atc_col
+            csv_file, generic_name_col, drug_name_col, desc_col, atc_col
         )
     except FileNotFoundError:
         raise FileNotFoundError(f"CSV file not found: {csv_file}")
