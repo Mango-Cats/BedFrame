@@ -1,4 +1,5 @@
 data/
+!eval/data/query.sql
 artifact/
 test/
 results/
