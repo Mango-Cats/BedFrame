@@ -7,7 +7,7 @@ drug CSV files and compares their outputs.
 
 # CSV files to process
 csv_files = [
-    "amoxicillin.csv",
+    "amoxicillin_exact.csv",
     "adapalene.csv",
     "nsaid.csv",
     "corticosteroid.csv",
@@ -16,11 +16,11 @@ csv_files = [
 
 # Sample sizes for each CSV file (None = use all drugs, int = random sample)
 samples = [
-    None,
-    None,
-    None,
-    None,
-    None
+    110,
+    10,
+    150,
+    250,
+    100
 ]
 
 assert len(csv_files) == len(samples), "The number of samples and csv_files must be the same."
@@ -61,12 +61,11 @@ def get_tfidf_vectorizer():
     Returns:
         TfidfVectorizer: Trained vectorizer
     """
-    df = pd.read_csv("data/boiled.csv", dtype=str).fillna('') 
+    df = pd.read_csv("../artifact/boiled.csv", dtype=str).fillna('') 
     df = df[df['Generic Name'] != '']
-    df['combined_text'] = df['Drug Name'] + ' ' + df['Description']
     
     vectorizer = TfidfVectorizer(lowercase=True, token_pattern=r'\b\w+\b')
-    vectorizer.fit(df['combined_text'].values)
+    vectorizer.fit(df['Description'].values)
     
     print(f"TF-IDF vocab size: {len(vectorizer.get_feature_names_out())}")
     
@@ -228,7 +227,7 @@ def tfidf_analysis(vectorizer, csv_name, sample_size=None):
     # Note: Sampling is now handled outside this function
 
     drug_df['combined_drug'] = drug_df['Generic Name'] + '/' + drug_df['Drug Name']
-    drug_df['combined_text'] = drug_df['Drug Name'] + ' ' + drug_df['Description']
+    drug_df['combined_text'] = drug_df['Description']
 
     drug_vec = vectorizer.transform(drug_df['combined_text'])
     drug_names = drug_df['combined_drug'].tolist()

@@ -11,6 +11,12 @@ device = "npu"
 # Expected columns: Generic Name, Drug Name, Description, ATC Codes
 csv_file = "../artifact/boiled.csv"
 
+[embeddings]
+# Generate embeddings for drug descriptions
+description = true
+# Generate embeddings for ATC (Anatomical Therapeutic Chemical) codes
+atc = false
+
 [output]
 # Output files for the embeddings database
 hdf5_file = "../artifact/drugsberted.h5"

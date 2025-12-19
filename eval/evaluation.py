@@ -353,20 +353,30 @@ def drug_tests(csv_name, hdf5_path, embedding_type="description"):
 
     drug_df["combined_drug"] = drug_df["Generic Name"] + "/" + drug_df["Drug Name"]
     drug_df["combined_text"] = drug_df["Drug Name"] + " " + drug_df["Description"]
+    
+    # Create unique keys matching the format used in drugsberter for embedding storage
+    # This handles cases where the same brand name is used for different drugs
+    drug_df["unique_key"] = drug_df["Generic Name"].str.strip().str.lower() + "|" + drug_df["Drug Name"].str.strip().str.lower()
 
     all_drug_names, all_embeddings = load_embeddings(hdf5_path, embedding_type)
 
-    test_drug_keys = drug_df["Drug Name"].tolist()
+    # Use unique keys for lookup, but keep combined_drug for display
+    test_drug_keys = drug_df["unique_key"].tolist()
+    display_names = drug_df["combined_drug"].tolist()
 
-    drug_vec, found_names = get_embeddings(
+    drug_vec, found_keys = get_embeddings(
         test_drug_keys, all_drug_names, all_embeddings
     )
+    
+    # Map found keys back to display names for output
+    key_to_display = dict(zip(test_drug_keys, display_names))
+    found_display_names = [key_to_display.get(key, key) for key in found_keys]
 
     print("-" * 67)
     print(f"BERT TEST: {test_drug_name.upper()}")
     get_vector_analysis(drug_vec)
-    levels(drug_vec, len(drug_vec), found_names)
-    sim_per_drug(drug_vec, found_names, len(drug_vec), f"{test_drug_name}_bert")
+    levels(drug_vec, len(drug_vec), found_display_names)
+    sim_per_drug(drug_vec, found_display_names, len(drug_vec), f"{test_drug_name}_bert")
 
 
 def parse_arguments():
