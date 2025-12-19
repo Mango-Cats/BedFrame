@@ -130,13 +130,18 @@ def load_and_process_data(
                 )
             drug_name = generic_name
 
+        # Create a unique key combining generic name and drug name to handle
+        # cases where the same brand name is used for different drugs
+        # (e.g., "healthcare" is used for amoxicillin, cotrimoxazole, etc.)
+        unique_key = f"{generic_name.strip().lower()}|{drug_name.strip().lower()}"
+
         # Store non-empty descriptions
         if description.strip():
-            drug_to_description[drug_name] = description.strip()
+            drug_to_description[unique_key] = description.strip()
 
         # Store non-empty ATC codes
         if atc_codes.strip():
-            drug_to_atc[drug_name] = atc_codes.strip()
+            drug_to_atc[unique_key] = atc_codes.strip()
 
     print(f"Drugs with descriptions: {len(drug_to_description)}")
     print(f"Drugs with ATC codes: {len(drug_to_atc)}")
@@ -476,11 +481,12 @@ def main():
     )
 
     # Generate ATC embeddings
-    atc_drug_names, atc_embeddings = generate_atc_embeddings(drug_to_atc, model)
+    # atc_drug_names, atc_embeddings = generate_atc_embeddings(drug_to_atc, model)
 
-    # Build embedding databases
+    # # Build embedding databases
     description_db, atc_db = build_embedding_databases(
-        desc_drug_names, desc_embeddings, atc_drug_names, atc_embeddings
+        desc_drug_names, desc_embeddings, 
+        # atc_drug_names, atc_embeddings
     )
 
     # Save to HDF5
