@@ -32,6 +32,8 @@ import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from pathlib import Path
+import tempfile
+import os
 
 
 def run_evaluation_script(csv_files, hdf5_path="../artifact/drugsberted.h5"):
@@ -223,9 +225,7 @@ def tfidf_analysis(vectorizer, csv_name, sample_size=None):
     
     drug_df = pd.DataFrame(processed_rows)
     
-    # Apply random sampling if specified
-    if sample_size is not None and sample_size < len(drug_df):
-        drug_df = drug_df.sample(n=sample_size, random_state=42)
+    # Note: Sampling is now handled outside this function
 
     drug_df['combined_drug'] = drug_df['Generic Name'] + '/' + drug_df['Drug Name']
     drug_df['combined_text'] = drug_df['Drug Name'] + ' ' + drug_df['Description']
@@ -301,23 +301,54 @@ def run_single_csv_analysis(csv_file, sample_size, vectorizer, hdf5_path="../art
     print(f"│  DATASET: {dataset_name.upper():^54}│")
     print(f"└─────────────────────────────────────────────────────────────────┘\n")
     
-    # Step 1: Run BERT evaluation for this CSV
-    print(f"  # [1/3] Running BERT Embeddings Evaluation...")
-    cmd = [sys.executable, "evaluation.py", "--hdf5", hdf5_path, "--input", csv_file]
+    # Pre-process and sample the data if needed
+    csv_to_use = csv_file
+    temp_csv_path = None
+    
+    if sample_size is not None:
+        # Load and sample the CSV
+        drug_df = pd.read_csv(f"data/{csv_file}", dtype=str, header=0).fillna('')
+        
+        if sample_size < len(drug_df):
+            print(f"  Sampling {sample_size} random drugs from {len(drug_df)} total drugs...")
+            drug_df = drug_df.sample(n=sample_size, random_state=42)
+            
+            # Save to temporary file
+            temp_csv_path = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.csv', dir='data')
+            temp_csv_name = os.path.basename(temp_csv_path.name)
+            temp_csv_path.close()
+            
+            drug_df.to_csv(f"data/{temp_csv_name}", index=False)
+            csv_to_use = temp_csv_name
+            print(f"  Created temporary sampled CSV: {temp_csv_name}")
+    
     try:
-        subprocess.run(cmd, check=True, capture_output=False, text=True)
-    except subprocess.CalledProcessError as e:
-        print(f"    Error running evaluation.py: {e}", file=sys.stderr)
-        return
+        # Step 1: Run BERT evaluation for this CSV
+        print(f"\n  # [1/3] Running BERT Embeddings Evaluation...")
+        cmd = [sys.executable, "evaluation.py", "--hdf5", hdf5_path, "--input", csv_to_use]
+        try:
+            subprocess.run(cmd, check=True, capture_output=False, text=True)
+        except subprocess.CalledProcessError as e:
+            print(f"    Error running evaluation.py: {e}", file=sys.stderr)
+            return
+        
+        # Step 2: Run TF-IDF analysis for this CSV
+        print(f"\n  # [2/3] Running TF-IDF Analysis...")
+        tfidf_analysis(vectorizer, csv_to_use, sample_size)
+        
+        # Step 3: Compare results for this CSV
+        print(f"\n  # [3/3] Comparing BERT and TF-IDF Results...")
+        compare_single_result(dataset_name)
+        print()
     
-    # Step 2: Run TF-IDF analysis for this CSV
-    print(f"\n  # [2/3] Running TF-IDF Analysis...")
-    tfidf_analysis(vectorizer, csv_file, sample_size)
-    
-    # Step 3: Compare results for this CSV
-    print(f"\n  # [3/3] Comparing BERT and TF-IDF Results...")
-    compare_single_result(dataset_name)
-    print()
+    finally:
+        # Clean up temporary file
+        if temp_csv_path is not None:
+            try:
+                os.unlink(f"data/{temp_csv_name}")
+                print(f"  Cleaned up temporary file: {temp_csv_name}")
+            except Exception as e:
+                print(f"  Warning: Could not delete temporary file {temp_csv_name}: {e}")
 
 
 def compare_single_result(dataset_name):
