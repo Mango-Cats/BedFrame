@@ -1,5 +1,7 @@
 data/
+!eval/data/
 !eval/data/query.sql
+eval/data/*.csv
 artifact/
 test/
 results/
