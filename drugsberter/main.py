@@ -12,9 +12,6 @@ Pipeline stages:
 3. Initialize pre-trained BioBERT model
 4. Generate embeddings for descriptions and ATC codes separately
 5. Save embeddings to HDF5 with metadata
-
-Author: Zhean Robby Ganituen (zrygan)
-Date: October 2025
 """
 
 import os
