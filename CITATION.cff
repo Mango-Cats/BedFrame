@@ -13,6 +13,15 @@ authors:
     email: zr.gntn@gmail.com
     affiliation: De La Salle University
     orcid: 'https://orcid.org/0009-0002-3266-5384'
+- given-names: Stephen
+    family-names: Borja
+    affiliation: De La Salle University
+- given-names: Erin Gabrielle
+    family-names: Chua
+    affiliation: De La Salle University
+- given-names: Gideon
+    family-names: Chua
+    affiliation: De La Salle University
 repository-code: 'https://github.com/Mango-Cats/BedFrame'
 abstract: >-
   Framework for computing the similarity of drugs via
